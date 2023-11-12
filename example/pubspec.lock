@@ -278,6 +278,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  windows_printing_models:
+    dependency: transitive
+    description:
+      path: "../../windows_printing_models"
+      relative: true
+    source: path
+    version: "0.0.1"
 sdks:
   dart: ">=3.1.5 <4.0.0"
   flutter: ">=3.3.0"

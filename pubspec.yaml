@@ -4,23 +4,20 @@ version: 0.0.1
 homepage:
 
 environment:
-  sdk: '>=3.1.5 <4.0.0'
-  flutter: '>=3.3.0'
+  sdk: ">=3.1.5 <4.0.0"
+  flutter: ">=3.3.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  freezed_annotation: ^2.4.1
-  json_annotation: ^4.8.1
   plugin_platform_interface: ^2.0.2
+  windows_printing_models:
+    path: ../windows_printing_models
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  build_runner: ^2.4.6
-  freezed: ^2.4.5
-  json_serializable: ^6.7.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

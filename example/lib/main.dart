@@ -33,8 +33,8 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      platformVersion = await _windowsPrintingPlugin.getPlatformVersion() ??
-          'Unknown platform version';
+      // platformVersion = await _windowsPrintingPlugin.getPlatformVersion() ??
+      'Unknown platform version';
       printerList = await _windowsPrintingPlugin.getPrinterList() ?? [];
       print(printerList);
     } on PlatformException {
@@ -48,7 +48,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = platformVersion;
+      // _platformVersion = platformVersion;
       _printerList = printerList;
     });
   }

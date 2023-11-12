@@ -1,5 +1,4 @@
 #include "windows_printing_plugin.h"
-
 // This must be included before many other Windows headers.
 #include <windows.h>
 
@@ -14,55 +13,74 @@
 #include <sstream>
 #include <string>
 #include <vector>
+// #include "converter.h"
+
 namespace windows_printing
 {
-  std::string toUtf8(std::wstring wstr)
+  class Converter
   {
-    if (wstr.empty())
-      return std::string();
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-    std::string strTo(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-    return strTo;
-  }
+  private:
+  public:
+    static std::string lpwstrToUtf8(std::wstring wstr)
+    {
+      std::string strTo;
+      char *szTo = new char[wstr.length() + 1];
+      szTo[wstr.size()] = '\0';
+      WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
+      strTo = szTo;
+      delete[] szTo;
+      return strTo;
+    }
 
-  std::wstring toUtf16(std::string str)
-  {
-    if (str.empty())
-      return std::wstring();
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
-    std::wstring wstrTo(size_needed, 0);
-    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
-    return wstrTo;
-  }
+    static std::wstring toUtf16(std::string str)
+    {
+      std::wstring wstrTo;
+      wchar_t *wszTo = new wchar_t[str.length() + 1];
+      wszTo[str.size()] = L'\0';
+      MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wszTo, (int)str.length());
+      wstrTo = wszTo;
+      delete[] wszTo;
+      return wstrTo;
+    }
 
-  std::string toUtf8(const wchar_t *wstr)
-  {
-    if (wstr == NULL)
-      return std::string();
-    return toUtf8(std::wstring(wstr));
-  }
+    static std::string lpwstrToUtf8(const wchar_t *wstr)
+    {
+      std::string strTo;
+      char *szTo = new char[wcslen(wstr) + 1];
+      szTo[wcslen(wstr)] = '\0';
+      WideCharToMultiByte(CP_UTF8, 0, wstr, -1, szTo, (int)wcslen(wstr), NULL, NULL);
+      strTo = szTo;
+      delete[] szTo;
+      return strTo;
+    }
 
-  std::wstring toUtf16(const char *str)
-  {
-    if (str == NULL)
-      return std::wstring();
-    return toUtf16(std::string(str));
-  }
+    static std::wstring toUtf16(const char *str)
+    {
+      std::wstring wstrTo;
+      wchar_t *wszTo = new wchar_t[strlen(str) + 1];
+      wszTo[strlen(str)] = L'\0';
+      MultiByteToWideChar(CP_UTF8, 0, str, -1, wszTo, (int)strlen(str));
+      wstrTo = wszTo;
+      delete[] wszTo;
+      return wstrTo;
+    }
 
-  std::string toUtf8(const char *str)
-  {
-    if (str == NULL)
-      return std::string();
-    return std::string(str);
-  }
+    static std::string lpwstrToUtf8(const char *str)
+    {
+      std::string strTo;
+      char *szTo = new char[strlen(str) + 1];
+      szTo[strlen(str)] = '\0';
+      WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)str, -1, szTo, (int)strlen(str), NULL, NULL);
+      strTo = szTo;
+      delete[] szTo;
+      return strTo;
+    }
 
-  std::wstring toUtf16(const wchar_t *wstr)
-  {
-    if (wstr == NULL)
-      return std::wstring();
-    return std::wstring(wstr);
-  }
+    static int DwordToInt(DWORD dw)
+    {
+      return static_cast<int>(dw);
+    }
+  };
 
   // static
   void WindowsPrintingPlugin::RegisterWithRegistrar(
@@ -92,24 +110,12 @@ namespace windows_printing
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result)
   {
-    if (method_call.method_name().compare("getPlatformVersion") == 0)
-    {
-      std::ostringstream version_stream;
-      version_stream << "Windows ";
-      if (IsWindows10OrGreater())
-      {
-        version_stream << "s+";
-      }
-      else if (IsWindows8OrGreater())
-      {
-        version_stream << "8";
-      }
-      else if (IsWindows7OrGreater())
-      {
-        version_stream << "7";
-      }
-      result->Success(flutter::EncodableValue(version_stream.str()));
-    }
+    ///
+    /// Get the list of printers
+    /// using the [EnumPrinters] (https://docs.microsoft.com/en-us/windows/win32/printdocs/enumprinters) function
+    ///
+    ///
+
     if (method_call.method_name().compare("getPrinterList") == 0)
     {
       DWORD numPrinters, bytesNeeded;
@@ -144,9 +150,16 @@ namespace windows_printing
       for (DWORD i = 0; i < numPrinters; i++)
       {
         auto printer = flutter::EncodableMap();
-        printer[flutter::EncodableValue("name")] = flutter::EncodableValue(toUtf8(pi2[i].pPrinterName));
+
+        printer[flutter::EncodableValue("printerName")] = flutter::EncodableValue(Converter::lpwstrToUtf8(pi2[i].pPrinterName));
+        printer[flutter::EncodableValue("printerPort")] = flutter::EncodableValue(Converter::lpwstrToUtf8(pi2[i].pPortName));
+        printer[flutter::EncodableValue("printerProcessor")] = flutter::EncodableValue(Converter::lpwstrToUtf8(pi2[i].pPrintProcessor));
+        printer[flutter::EncodableValue("cJobs")] = flutter::EncodableValue(Converter::DwordToInt(pi2[i].cJobs));
+
         printerList.push_back(flutter::EncodableValue(printer));
       }
+
+      std::cout << "DONE" << std::endl;
 
       result->Success(flutter::EncodableList(printerList));
 
