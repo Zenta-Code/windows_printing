@@ -19,14 +19,15 @@ class WindowsPrinting {
     }
   }
 
-  Future directPrint({
+  Future<Map<Object?, Object?>?> directPrint({
     required String printerName,
     required String filePath,
     required String jobName,
     required int copies,
   }) async {
     try {
-      final print = await WindowsPrintingPlatform.instance.directPrint(
+      final Map<Object?, Object?>? print =
+          await WindowsPrintingPlatform.instance.directPrint(
         printerName: printerName,
         filePath: filePath,
         jobName: jobName,
@@ -35,6 +36,7 @@ class WindowsPrinting {
       return print;
     } catch (e) {
       print(e);
+      return null;
     }
   }
 }

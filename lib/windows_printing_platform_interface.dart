@@ -28,7 +28,7 @@ abstract class WindowsPrintingPlatform extends PlatformInterface {
     throw UnimplementedError('getPrintersList() has not been implemented.');
   }
 
-  Future directPrint({
+  Future<Map<Object?,Object?>?> directPrint({
     required String printerName,
     required String filePath,
     required String jobName,

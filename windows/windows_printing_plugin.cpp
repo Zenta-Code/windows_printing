@@ -172,16 +172,100 @@ namespace windows_printing
     {
       auto arguments = std::get<flutter::EncodableMap>(*method_call.arguments());
       auto printerName = std::get<std::string>(arguments[flutter::EncodableValue("printerName")]);
-      auto printerPort = std::get<std::string>(arguments[flutter::EncodableValue("printerPort")]);
-      auto printerProcessor = std::get<std::string>(arguments[flutter::EncodableValue("printerProcessor")]);
-      auto printerJobName = std::get<std::string>(arguments[flutter::EncodableValue("printerJobName")]);
-      auto printerJobData = std::get<std::string>(arguments[flutter::EncodableValue("printerJobData")]);
+      auto filePath = std::get<std::string>(arguments[flutter::EncodableValue("filePath")]);
+      auto jobName = std::get<std::string>(arguments[flutter::EncodableValue("jobName")]);
+      // auto copies = std::get<int>(arguments[flutter::EncodableValue("copies")]);
 
-      std::cout << "printerName: " << printerName << std::endl;
-      std::cout << "printerPort: " << printerPort << std::endl;
-      std::cout << "printerProcessor: " << printerProcessor << std::endl;
-      std::cout << "printerJobName: " << printerJobName << std::endl;
-      std::cout << "printerJobData: " << printerJobData << std::endl;
+      std::wstring wprinterName = Converter::toUtf16(printerName);
+      std::wstring wfilePath = Converter::toUtf16(filePath);
+      std::wstring wjobName = Converter::toUtf16(jobName);
+
+      DOC_INFO_1 docInfo;
+      HANDLE hPrinter;
+      DWORD dwJob;
+      DWORD dwBytesWritten;
+      BOOL bSuccess;
+
+      // Open a handle to the printer.
+      bSuccess = OpenPrinter((LPWSTR)wprinterName.c_str(), &hPrinter, NULL);
+      if (!bSuccess)
+      {
+        result->Error("ERROR", "OpenPrinter failed");
+        return;
+      }
+
+      // Fill in the structure with info about this "document."
+      docInfo.pDocName = (LPWSTR)wjobName.c_str();
+      docInfo.pOutputFile = NULL;
+      docInfo.pDatatype = (LPWSTR)L"RAW";
+
+      // Inform the spooler the document is beginning.
+      dwJob = StartDocPrinter(hPrinter, 1, (LPBYTE)&docInfo);
+      if (dwJob == 0)
+      {
+        result->Error("ERROR", "StartDocPrinter failed");
+        ClosePrinter(hPrinter);
+        return;
+      }
+
+      // Start a page.
+      bSuccess = StartPagePrinter(hPrinter);
+
+      if (!bSuccess)
+      {
+        result->Error("ERROR", "StartPagePrinter failed");
+        EndDocPrinter(hPrinter);
+        ClosePrinter(hPrinter);
+        return;
+      }
+
+      // Send the data to the printer.
+      bSuccess = WritePrinter(hPrinter, (LPVOID)wfilePath.c_str(), (DWORD)wfilePath.length(), &dwBytesWritten);
+      if (!bSuccess)
+      {
+        result->Error("ERROR", "WritePrinter failed");
+        EndPagePrinter(hPrinter);
+        EndDocPrinter(hPrinter);
+        ClosePrinter(hPrinter);
+        return;
+      }
+
+      // End the page.
+      bSuccess = EndPagePrinter(hPrinter);
+      if (!bSuccess)
+      {
+        result->Error("ERROR", "EndPagePrinter failed");
+        EndDocPrinter(hPrinter);
+        ClosePrinter(hPrinter);
+        return;
+      }
+
+      // Inform the spooler that the document is ending.
+      bSuccess = EndDocPrinter(hPrinter);
+      if (!bSuccess)
+      {
+        result->Error("ERROR", "EndDocPrinter failed");
+        ClosePrinter(hPrinter);
+        return;
+      }
+
+      // Tidy up the printer handle.
+      bSuccess = ClosePrinter(hPrinter);
+      if (!bSuccess)
+      {
+        result->Error("ERROR", "ClosePrinter failed");
+        return;
+      }
+
+      auto response = flutter::EncodableMap();
+
+      response[flutter::EncodableValue("success")] = flutter::EncodableValue(true);
+      response
+          [flutter::EncodableValue("message")] = flutter::EncodableValue("Printed successfully");
+      response
+          [flutter::EncodableValue("job")] = flutter::EncodableValue(Converter::DwordToInt(dwJob));
+
+      result->Success(flutter::EncodableValue(response));
     }
     else
     {
