@@ -28,4 +28,23 @@ class MethodChannelWindowsPrinting extends WindowsPrintingPlatform {
       return null;
     }
   }
+
+  @override
+  Future directPrint({
+    required String printerName,
+    required String filePath,
+    required String jobName,
+    required int copies,
+  }) async {
+    try {
+      await methodChannel.invokeMethod('directPrint', {
+        'printerName': printerName,
+        'filePath': filePath,
+        'jobName': jobName,
+        'copies': copies,
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
 }

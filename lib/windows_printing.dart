@@ -18,4 +18,23 @@ class WindowsPrinting {
       return null;
     }
   }
+
+  Future directPrint({
+    required String printerName,
+    required String filePath,
+    required String jobName,
+    required int copies,
+  }) async {
+    try {
+      final print = await WindowsPrintingPlatform.instance.directPrint(
+        printerName: printerName,
+        filePath: filePath,
+        jobName: jobName,
+        copies: copies,
+      );
+      return print;
+    } catch (e) {
+      print(e);
+    }
+  }
 }

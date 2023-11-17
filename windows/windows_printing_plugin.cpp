@@ -168,6 +168,21 @@ namespace windows_printing
 
       return;
     }
+    if (method_call.method_name().compare("directPrint") == 0)
+    {
+      auto arguments = std::get<flutter::EncodableMap>(*method_call.arguments());
+      auto printerName = std::get<std::string>(arguments[flutter::EncodableValue("printerName")]);
+      auto printerPort = std::get<std::string>(arguments[flutter::EncodableValue("printerPort")]);
+      auto printerProcessor = std::get<std::string>(arguments[flutter::EncodableValue("printerProcessor")]);
+      auto printerJobName = std::get<std::string>(arguments[flutter::EncodableValue("printerJobName")]);
+      auto printerJobData = std::get<std::string>(arguments[flutter::EncodableValue("printerJobData")]);
+
+      std::cout << "printerName: " << printerName << std::endl;
+      std::cout << "printerPort: " << printerPort << std::endl;
+      std::cout << "printerProcessor: " << printerProcessor << std::endl;
+      std::cout << "printerJobName: " << printerJobName << std::endl;
+      std::cout << "printerJobData: " << printerJobData << std::endl;
+    }
     else
     {
       result->NotImplemented();

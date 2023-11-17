@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  final String _platformVersion = 'Unknown';
   List<dynamic> _printerList = [];
   final _windowsPrintingPlugin = WindowsPrinting();
 

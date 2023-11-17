@@ -23,9 +23,17 @@ abstract class WindowsPrintingPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
- 
 
   Future<List<Printer>?> getPrinterList() {
     throw UnimplementedError('getPrintersList() has not been implemented.');
+  }
+
+  Future directPrint({
+    required String printerName,
+    required String filePath,
+    required String jobName,
+    required int copies,
+  }) {
+    throw UnimplementedError('print() has not been implemented.');
   }
 }
