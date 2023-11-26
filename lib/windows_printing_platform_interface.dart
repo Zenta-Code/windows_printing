@@ -1,4 +1,5 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:windows_printing_models/windows_printing_models.dart';
 
 import 'windows_printing_method_channel.dart';
 
@@ -23,7 +24,7 @@ abstract class WindowsPrintingPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<List<dynamic>?> getPrinterList() {
+  Future<List<Printer>?> getPrinterList() {
     throw UnimplementedError('getPrintersList() has not been implemented.');
   }
 

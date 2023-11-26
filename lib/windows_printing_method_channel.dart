@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:windows_printing_models/windows_printing_models.dart';
 
 import 'windows_printing_platform_interface.dart';
 
@@ -10,16 +11,15 @@ class MethodChannelWindowsPrinting extends WindowsPrintingPlatform {
   final methodChannel = const MethodChannel('windows_printing');
 
   @override
-  Future<List<dynamic>?> getPrinterList() async {
+  Future<List<Printer>?> getPrinterList() async {
     try {
       final List<dynamic>? printerList =
           await methodChannel.invokeMethod('getPrinterList');
 
       if (printerList != null) {
-        // final List<dynamic> typedPrinterList =
-        //     printerList.map((e) => Printer.fromMap(e)).toList();
-        // return typedPrinterList;
-        return printerList;
+        final List<Printer> typedPrinterList =
+            printerList.map((e) => Printer.fromMap(e)).toList();
+        return typedPrinterList;
       }
 
       return null;
