@@ -81,6 +81,35 @@ namespace windows_printing
       return static_cast<int>(dw);
     }
   };
+  class PrinterPort
+  {
+  private:
+  public:
+    // get printer status is on or off
+    bool getPrinterStatus(const LPWSTR printerName)
+    {
+      HANDLE hPrinter = NULL;
+      OpenPrinter(printerName, &hPrinter, NULL);
+
+      DWORD dwPrinterStatus, dwPrinterState;
+      DWORD dwRet = GetPrinter(hPrinter, 2, NULL, 0, &dwPrinterStatus);
+      if (dwRet == 0)
+      {
+        return false;
+      }
+
+      dwRet = GetPrinter(hPrinter, 2, (LPBYTE)&dwPrinterStatus, dwPrinterStatus, &dwPrinterStatus);
+      if (dwRet == 0)
+      {
+        return false;
+      }
+
+      dwPrinterState = dwPrinterStatus & 0xf000;
+      GlobalFree(hPrinter);
+      ClosePrinter(hPrinter);
+      return dwPrinterState != 0x0000;
+    };
+  };
 
   // static
   void WindowsPrintingPlugin::RegisterWithRegistrar(
@@ -151,9 +180,18 @@ namespace windows_printing
       {
         auto printer = flutter::EncodableMap();
 
+        // get printer status is on or off
+        PrinterPort printerPort;
+        bool isPrinterOn = printerPort.getPrinterStatus(pi2[i].pPrinterName);
+
+        printer[flutter::EncodableValue("printerOnline")] = flutter::EncodableValue(isPrinterOn);
+
         printer[flutter::EncodableValue("printerName")] = flutter::EncodableValue(Converter::lpwstrToUtf8(pi2[i].pPrinterName));
+
         printer[flutter::EncodableValue("printerPort")] = flutter::EncodableValue(Converter::lpwstrToUtf8(pi2[i].pPortName));
+
         printer[flutter::EncodableValue("printerProcessor")] = flutter::EncodableValue(Converter::lpwstrToUtf8(pi2[i].pPrintProcessor));
+
         printer[flutter::EncodableValue("cJobs")] = flutter::EncodableValue(Converter::DwordToInt(pi2[i].cJobs));
 
         printerList.push_back(flutter::EncodableValue(printer));

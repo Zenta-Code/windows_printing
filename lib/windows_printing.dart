@@ -3,9 +3,9 @@ import 'package:windows_printing_models/windows_printing_models.dart';
 import 'windows_printing_platform_interface.dart';
 
 class WindowsPrinting {
-  Future<List<Printer>?> getPrinterList() async {
+  Future<List<dynamic>?> getPrinterList() async {
     try {
-      final List<Printer>? printerList =
+      final List<dynamic>? printerList =
           await WindowsPrintingPlatform.instance.getPrinterList();
 
       if (printerList != null) {
